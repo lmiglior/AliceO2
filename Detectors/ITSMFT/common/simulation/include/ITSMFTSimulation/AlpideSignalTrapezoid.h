@@ -69,6 +69,8 @@ inline float AlpideSignalTrapezoid::getCollectedCharge(float totalNEle, float tM
   // estimate rise time for given charge
   float riseTime = totalNEle > mChargeRise0 ? 0. : mMaxRiseTime * (1.f - totalNEle * mChargeRise0Inv);
 
+  printf("BV ===== AlpideSignalTrapezoid::getCollectedCharge riseTime = %f \n",riseTime);
+  
   if (tMax >= riseTime && tMin <= mDuration) { // strobe overlaps flat top
     return totalNEle;
   }

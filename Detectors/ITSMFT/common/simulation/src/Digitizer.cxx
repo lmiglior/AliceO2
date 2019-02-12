@@ -59,6 +59,7 @@ void Digitizer::process(const std::vector<Hit>* hits, int evID, int srcID)
 
   // is there something to flush ?
   if (mNewROFrame > mROFrameMin) {
+    printf("BV===== Digitizer::process fillOutputContainer(mNewROFrame-1 = %d) \n",mNewROFrame-1);
     fillOutputContainer(mNewROFrame - 1); // flush out all frame preceding the new one
   }
 
@@ -107,6 +108,8 @@ void Digitizer::setEventTime(double t)
   // RO frame corresponding to provided time
   mNewROFrame = static_cast<UInt_t>(mEventTime * mParams.getROFrameLengthInv());
 
+  printf("BV===== Digitizer::setEventTime %f   %f   %d   %d   %d\n",t,mEventTime,mNewROFrame,mROFrameMin,mROFrameMax);
+  
   if (mNewROFrame < mROFrameMin) {
     LOG(FATAL) << "New ROFrame (time=" << t << ") precedes currently cashed " << mROFrameMin << FairLogger::endl;
   }
@@ -194,6 +197,7 @@ void Digitizer::processHit(const o2::ITSMFT::Hit& hit, UInt_t& maxFr, int evID, 
   // frame of the hit signal end: in the triggered mode we read just 1 frame
   UInt_t roFrameMax = mParams.isContinuous() ? UInt_t((hTime0 + tTot) * mParams.getROFrameLengthInv()) : roFrame;
   int nFrames = roFrameMax + 1 - roFrame;
+  printf("BV===== Digitizer::processHit maxFr = %d hTime0 = %f   to   %f   nFrames = %d \n", maxFr, hTime0, hTime0+tTot, nFrames);
   if (roFrameMax > maxFr) {
     maxFr = roFrameMax; // if signal extends beyond current maxFrame, increase the latter
   }
@@ -309,6 +313,7 @@ void Digitizer::processHit(const o2::ITSMFT::Hit& hit, UInt_t& maxFr, int evID, 
   // fire the pixels assuming Poisson(n_response_electrons)
   o2::MCCompLabel lbl(hit.GetTrackID(), evID, srcID);
   auto& chip = mChips[hit.GetDetectorID()];
+  printf("BV===== Digitizer::processHit DetectorID = %d \n",hit.GetDetectorID());
 
   for (int irow = rowSpan; irow--;) {
     UShort_t rowIS = irow + rowS;
@@ -338,9 +343,11 @@ void Digitizer::registerDigits(ChipDigitsContainer& chip, UInt_t roFrame, float 
   // In every ROFrame we check the collected signal during strobe
 
   float tStrobe = mParams.getStrobeDelay() - tInROF; // strobe start wrt signal start
+  printf("BV===== Digitizer::registerDigits nROF = %d   ROF = %d   tInROF = %f   nEle = %d   row/col = %d/%d \n",nROF,roFrame,tInROF,nEle,row,col);
   for (int i = 0; i < nROF; i++) {
     UInt_t roFr = roFrame + i;
     int nEleROF = mParams.getSignalShape().getCollectedCharge(nEle, tStrobe, tStrobe + mParams.getStrobeLength());
+    printf("BV===== Digitizer::registerDigits ROF %d   strobe = %f   to   %f   nEleROF = %d \n", i, tStrobe, tStrobe + mParams.getStrobeLength(), nEleROF);
     tStrobe += mParams.getROFrameLength(); // for the next ROF
 
     // discard too small contributions, they have no chance to produce a digit
@@ -351,6 +358,7 @@ void Digitizer::registerDigits(ChipDigitsContainer& chip, UInt_t roFrame, float 
       mEventROFrameMax = roFr;
     if (roFr < mEventROFrameMin)
       mEventROFrameMin = roFr;
+    printf("BV===== PreDigit chip ID %d ROF %d row/col %d/%d lbl %d event ROF min/max %d/%d nEleROF %d \n",chip.getChipIndex(),roFr,row,col,lbl,mEventROFrameMin,mEventROFrameMax,nEleROF);
     auto key = chip.getOrderingKey(roFr, row, col);
     PreDigit* pd = chip.findDigit(key);
     if (!pd) {

@@ -1329,6 +1329,20 @@ o2_define_bucket(
 
 o2_define_bucket(
     NAME
+    MFT_workflow_bucket
+
+    DEPENDENCIES
+    Framework
+    mft_reconstruction_bucket
+    MFTReconstruction
+
+    INCLUDE_DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/Detectors/ITSMFT/MFT/workflow/include
+    ${CMAKE_SOURCE_DIR}/Detectors/ITSMFT/MFT/reconstruction/include
+)
+
+o2_define_bucket(
+    NAME
     tof_base_bucket
 
     DEPENDENCIES

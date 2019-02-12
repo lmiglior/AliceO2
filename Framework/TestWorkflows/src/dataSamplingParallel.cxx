@@ -41,7 +41,7 @@ struct FakeCluster {
 using DataHeader = o2::header::DataHeader;
 
 size_t parallelSize = 4;
-size_t collectionChunkSize = 1000;
+size_t collectionChunkSize[4] = { 1000, 2000, 3000, 4000 };
 void someDataProducerAlgorithm(ProcessingContext& ctx);
 void someProcessingStageAlgorithm(ProcessingContext& ctx);
 void someSinkAlgorithm(ProcessingContext& ctx);
@@ -141,17 +141,18 @@ void someDataProducerAlgorithm(ProcessingContext& ctx)
   sleep(1);
   // Creates a new message of size collectionChunkSize which
   // has "TPC" as data origin and "CLUSTERS" as data description.
-  auto tpcClusters = ctx.outputs().make<FakeCluster>(Output{ "TPC", "CLUSTERS", index }, collectionChunkSize);
+  auto tpcClusters = ctx.outputs().make<FakeCluster>(Output{ "TPC", "CLUSTERS", index }, collectionChunkSize[index]);
   int i = 0;
-
+  LOG(INFO) << "DataProducerAlgorithm index = " << index;
   for (auto& cluster : tpcClusters) {
-    assert(i < collectionChunkSize);
+    assert(i < collectionChunkSize[index]);
     cluster.x = index;
     cluster.y = i;
     cluster.z = i;
     cluster.q = rand() % 1000;
     i++;
   }
+  LOG(INFO) << "DataProducerAlgorithm index = " << index << " collectionChunkSize = " << i;
 }
 
 void someProcessingStageAlgorithm(ProcessingContext& ctx)
@@ -160,20 +161,24 @@ void someProcessingStageAlgorithm(ProcessingContext& ctx)
 
   const FakeCluster* inputDataTpc = reinterpret_cast<const FakeCluster*>(ctx.inputs().get("dataTPC").payload);
   auto processedTpcClusters =
-    ctx.outputs().make<FakeCluster>(Output{ "TPC", "CLUSTERS_P", index }, collectionChunkSize);
+    ctx.outputs().make<FakeCluster>(Output{ "TPC", "CLUSTERS_P", index }, collectionChunkSize[index]);
 
   int i = 0;
+  LOG(INFO) << "ProcessingStageAlgorithm index = " << index;
   for (auto& cluster : processedTpcClusters) {
-    assert(i < collectionChunkSize);
+    assert(i < collectionChunkSize[index]);
     cluster.x = -inputDataTpc[i].x;
     cluster.y = 2 * inputDataTpc[i].y;
     cluster.z = inputDataTpc[i].z * inputDataTpc[i].q;
     cluster.q = inputDataTpc[i].q;
     i++;
   }
+  LOG(INFO) << "ProcessingStageAlgorithm index = " << index << " collectionChunkSize = " << i;
 };
 
 void someSinkAlgorithm(ProcessingContext& ctx)
 {
   const FakeCluster* inputDataTpc = reinterpret_cast<const FakeCluster*>(ctx.inputs().get("dataTPC-proc").payload);
+  const auto* header = o2::header::get<DataHeader*>(ctx.inputs().get("dataTPC-proc").header);
+  LOG(INFO) << "SinkAlgorithm total size = " << header->payloadSize / sizeof(FakeCluster);
 }

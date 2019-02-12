@@ -94,7 +94,7 @@ class ITSMFTDPLDigitizerTask
     // parameters of signal time response: flat-top duration, max rise time and q @ which rise time is 0
     mDigitizer.getParams().getSignalShape().setParameters(7500., 1100., 450.);
     mDigitizer.getParams().setChargeThreshold(150); // charge threshold in electrons
-    mDigitizer.getParams().setNoisePerPixel(noise); // noise level
+    mDigitizer.getParams().setNoisePerPixel(0.); // noise level
     // init digitizer
     mDigitizer.init();
   }
@@ -132,23 +132,23 @@ class ITSMFTDPLDigitizerTask
       if (mQEDChain.GetEntries()) { // QED must be processed before other inputs since done in small time steps
         processQED(eventTime);
       }
-
+      printf("BV===== ITSMFTDPLDigitizerSpec collID %d eventTime %f \n",collID,eventTime);
       mDigitizer.setEventTime(eventTime);
       mDigitizer.resetEventROFrames(); // to estimate min/max ROF for this collID
       // for each collision, loop over the constituents event and source IDs
       // (background signal merging is basically taking place here)
       for (auto& part : eventParts[collID]) {
-
         // get the hits for this event and this source
         mHits.clear();
         retrieveHits(part.sourceID, part.entryID);
-
+	printf("BV===== process event part %d from source %d \n",part.entryID,part.sourceID);
         LOG(INFO) << "For collision " << collID << " eventID " << part.entryID
                   << " found " << mHits.size() << " hits " << FairLogger::endl;
 
         mDigitizer.process(&mHits, part.entryID, part.sourceID); // call actual digitization procedure
       }
       mMC2ROFRecordsAccum.emplace_back(collID, -1, mDigitizer.getEventROFrameMin(), mDigitizer.getEventROFrameMax());
+      printf("BV===== call accumulate \n");
       accumulate();
     }
     // finish digitization ... stream any remaining digits/labels
@@ -231,6 +231,7 @@ class ITSMFTDPLDigitizerTask
     // accumulate result of single event processing, called after processing every event supplied
     // AND after the final flushing via digitizer::fillOutputContainer
     if (!mDigits.size()) {
+      printf("BV===== ITSMFTDPLDigitizerTask::accumulate no digits were flushed \n");
       return; // no digits were flushed, nothing to accumulate
     }
     static int fixMC2ROF = 0; // 1st entry in mc2rofRecordsAccum to be fixed for ROFRecordID
@@ -239,8 +240,9 @@ class ITSMFTDPLDigitizerTask
 
     // fix ROFrecords references on ROF entries
     auto nROFRecsOld = mROFRecordsAccum.size();
-
+    printf("BV===== ITSMFTDPLDigitizerTask::accumulate \n");
     for (int i = 0; i < mROFRecords.size(); i++) {
+      printf("BV===== loop over ROF record: %d \n",i);
       auto& rof = mROFRecords[i];
       rof.getROFEntry().shiftIndex(ndigAcc);
       rof.print();
