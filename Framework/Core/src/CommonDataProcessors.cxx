@@ -80,6 +80,8 @@ DataProcessorSpec CommonDataProcessors::getGlobalFileSink(std::vector<InputSpec>
         output->write(reinterpret_cast<char const*>(header), sizeof(header::DataHeader));
         output->write(reinterpret_cast<char const*>(dataProcessingHeader), sizeof(DataProcessingHeader));
         output->write(entry.payload, o2::framework::DataRefUtils::getPayloadSize(entry));
+        LOG(INFO) << "wrote data header, size " << sizeof(header::DataHeader);
+        LOG(INFO) << "wrote data processing header, size " << sizeof(DataProcessingHeader);
         LOG(INFO) << "wrote data, size " << o2::framework::DataRefUtils::getPayloadSize(entry);
       }
     });

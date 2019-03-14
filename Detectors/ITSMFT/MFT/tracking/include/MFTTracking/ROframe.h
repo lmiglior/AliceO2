@@ -7,36 +7,37 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
+///
+/// \file ROframe.h
+/// \brief
+///
 
-/// @file   RecoWorkflow.cxx
-
-#include "MFTWorkflow/TestWorkflow.h"
-
-#include "MFTWorkflow/DigitReaderSpec.h"
-#include "MFTWorkflow/DigitDigestSpec.h"
-#include "MFTWorkflow/DigestWriterSpec.h"
+#ifndef O2_MFT_ROFRAME_H_
+#define O2_MFT_ROFRAME_H_
 
 namespace o2
 {
 namespace MFT
 {
 
-namespace TestWorkflow
+class ROframe final
 {
+ public:
+  ROframe(int ROframeId);
+  int getROFrameId() const;
+  void clear();
 
-framework::WorkflowSpec getWorkflow()
+ private:
+  const int mROframeId;
+};
+
+inline int ROframe::getROFrameId() const { return mROframeId; }
+
+inline void ROframe::clear()
 {
-  framework::WorkflowSpec specs;
-
-  specs.emplace_back(o2::MFT::getDigitReaderSpec());
-  specs.emplace_back(o2::MFT::getDigitDigestSpec());
-  specs.emplace_back(o2::MFT::getDigestWriterSpec());
-
-  return specs;
 }
-
-} // namespace TestWorkflow
 
 } // namespace MFT
 } // namespace o2
-  
+
+#endif /* O2_MFT_ROFRAME_H_ */

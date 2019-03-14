@@ -8,44 +8,41 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// @file   ClustererSpec.h
+/// @file   DigestWriterSpec.h
 
-#ifndef O2_MFT_CLUSTERERDPL_H_
-#define O2_MFT_CLUSTERERDPL_H_
+#ifndef O2_MFT_DIGESTWRITER_H_
+#define O2_MFT_DIGESTWRITER_H_
 
-#include <fstream>
+#include "TFile.h"
 
 #include "Framework/DataProcessorSpec.h"
 #include "Framework/Task.h"
 
-#include "ITSMFTReconstruction/Clusterer.h"
-
 using namespace o2::framework;
-
 namespace o2
 {
 namespace MFT
 {
 
-class ClustererDPL : public Task
+class DigestWriter : public Task
 {
  public:
-  ClustererDPL() = default;
-  ~ClustererDPL() = default;
+  DigestWriter() = default;
+  ~DigestWriter() = default;
   void init(InitContext& ic) final;
   void run(ProcessingContext& pc) final;
 
  private:
   int mState = 0;
-  std::unique_ptr<std::ifstream> mFile = nullptr;
-  std::unique_ptr<o2::ITSMFT::Clusterer> mClusterer = nullptr;
+  std::unique_ptr<TFile> mFile = nullptr;
+  std::unique_ptr<std::ofstream> mLogFile = nullptr;
 };
 
 /// create a processor spec
-/// run MFT cluster finder
-framework::DataProcessorSpec getClustererSpec();
+/// write ITS tracks a root file
+framework::DataProcessorSpec getDigestWriterSpec();
 
 } // namespace MFT
 } // namespace o2
 
-#endif /* O2_MFT_CLUSTERERDPL */
+#endif /* O2_MFT_DIGESTWRITER */

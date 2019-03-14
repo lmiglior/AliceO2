@@ -8,10 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// @file   DigestWriterSpec.h
+/// @file   DigitDigestSpec.h
 
-#ifndef O2_MFT_DIGESTWRITER
-#define O2_MFT_DIGESTWRITER
+#ifndef O2_MFT_DIGITDIGEST_H_
+#define O2_MFT_DIGITDIGEST_H_
 
 #include "TFile.h"
 
@@ -19,30 +19,35 @@
 #include "Framework/Task.h"
 
 using namespace o2::framework;
+
 namespace o2
 {
 namespace MFT
 {
 
-class DigestWriter : public Task
+struct Digest {
+  int inputCount;
+  int digitsCount;
+};
+  
+class DigitDigest : public Task
 {
  public:
-  DigestWriter() = default;
-  ~DigestWriter() = default;
+  DigitDigest() = default;
+  ~DigitDigest() = default;
   void init(InitContext& ic) final;
   void run(ProcessingContext& pc) final;
 
  private:
   int mState = 0;
   std::unique_ptr<TFile> mFile = nullptr;
-  std::unique_ptr<std::ofstream> mLogFile = nullptr;
 };
 
 /// create a processor spec
-/// write ITS tracks a root file
-framework::DataProcessorSpec getDigestWriterSpec();
+/// digest MFT digits sent by a digits reader
+framework::DataProcessorSpec getDigitDigestSpec();
 
 } // namespace MFT
 } // namespace o2
 
-#endif /* O2_MFT_DIGESTWRITER */
+#endif /* O2_MFT_DIGITDIGEST */

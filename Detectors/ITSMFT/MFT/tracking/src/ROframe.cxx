@@ -7,24 +7,23 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
+///
+/// \file ROframe.cxx
+/// \brief
+///
 
-#ifndef O2_MFT_RECOWORKFLOW_H_
-#define O2_MFT_RECOWORKFLOW_H_
+#include "MFTTracking/ROframe.h"
 
-/// @file   RecoWorkflow.h
-
-#include "Framework/WorkflowSpec.h"
+#include <iostream>
 
 namespace o2
 {
 namespace MFT
 {
 
-namespace RecoWorkflow
+ROframe::ROframe(const int ROframeId) : mROframeId{ ROframeId }
 {
-framework::WorkflowSpec getWorkflow();
 }
 
 } // namespace MFT
 } // namespace o2
-#endif

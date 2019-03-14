@@ -48,13 +48,15 @@ void Clusterer::process(PixelReader& reader, std::vector<Cluster>* fullClus,
 
   UInt_t prevROF = o2::ITSMFT::PixelData::DummyROF;
   mClustersCount = compClus ? compClus->size() : (fullClus ? fullClus->size() : 0);
-
+  LOG(INFO) << "BV===== start Clusterer::process" << FairLogger::endl;
   while ((mChipData = reader.getNextChipData(mChips))) { // read next chip data to corresponding
     // vector in the mChips and return the pointer on it
 
     mCurrROF = mChipData->getROFrame();
+    LOG(INFO) << "BV===== Clusterer::process current ROF " << mCurrROF << " print: " << FairLogger::endl;
+    mChipData->print();
     if (prevROF != mCurrROF && prevROF != o2::ITSMFT::PixelData::DummyROF) {
-      LOG(INFO) << "ITS: clusterizing new ROFrame " << mCurrROF << FairLogger::endl;
+      LOG(INFO) << "BV===== ITS: clusterizing new ROFrame " << mCurrROF << FairLogger::endl;
       if (mClusTree) { // if necessary, flush existing data
         flushClusters(fullClus, compClus, labelsCl);
       }
@@ -62,8 +64,7 @@ void Clusterer::process(PixelReader& reader, std::vector<Cluster>* fullClus,
     prevROF = mCurrROF;
 
     mCurrChipID = mChipData->getChipID();
-    // LOG(DEBUG) << "ITSClusterer got Chip " << mCurrChipID << " ROFrame " << mChipData->getROFrame()
-    //            << " Nhits " << mChipData->getData().size() << FairLogger::endl;
+    LOG(INFO) << "BV===== ITSClusterer got chip " << mCurrChipID << " ROFrame " << mChipData->getROFrame() << " Nhits " << mChipData->getData().size() << FairLogger::endl;
 
     if (mMaskOverflowPixels) { // mask pixels fired from the previous ROF
       if (mChipsOld.size() < mChips.size()) {

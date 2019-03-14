@@ -10,8 +10,8 @@
 
 /// @file   ClusterWriterSpec.h
 
-#ifndef O2_MFT_CLUSTERWRITER_H
-#define O2_MFT_CLUSTERWRITER_H
+#ifndef O2_MFT_CLUSTERWRITER_H_
+#define O2_MFT_CLUSTERWRITER_H_
 
 #include "TFile.h"
 

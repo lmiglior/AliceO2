@@ -14,12 +14,13 @@
 
 #include "TTree.h"
 
+#include "MFTTestwf/ClusterWriterSpec.h"
+
 #include "Framework/ControlService.h"
-#include "MFTWorkflow/ClusterWriterSpec.h"
-#include "DataFormatsITSMFT/CompCluster.h"
-#include "DataFormatsITSMFT/Cluster.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
+#include "DataFormatsITSMFT/CompCluster.h"
+#include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
 
 using namespace o2::framework;
@@ -57,7 +58,7 @@ void ClusterWriter::run(ProcessingContext& pc)
             << labels->getIndexedSize() << " MC label objects, in "
             << rofs.size() << " RO frames and "
             << mc2rofs.size() << " MC events";
-
+  
   mFile->WriteObjectAny(&rofs, "std::vector<o2::ITSMFT::ROFRecord>", "MFTClusterROF");
   mFile->WriteObjectAny(&mc2rofs, "std::vector<o2::ITSMFT::MC2ROFRecord>", "MFTClusterMC2ROF");
 
@@ -67,8 +68,9 @@ void ClusterWriter::run(ProcessingContext& pc)
   tree.Branch("MFTClusterMCTruth", &plabels);
   tree.Fill();
   tree.Write();
+  
   mFile->Close();
-
+  
   mState = 2;
   pc.services().get<ControlService>().readyToQuit(true);
 }

@@ -56,13 +56,16 @@ int LookUp::groupFinder(int nRow, int nCol)
 
 int LookUp::findGroupID(int nRow, int nCol, const unsigned char patt[Cluster::kMaxPatternBytes])
 {
+  //LOG(INFO) << "BV===== LookUp::findGroup dictionary size = " << mDictionary.GetSize();
   int nBits = nRow * nCol;
   // Small topology
   if (nBits < 9) {
     int ID = mDictionary.mSmallTopologiesLUT[(nCol - 1) * 255 + (int)patt[0]];
-    if (ID >= 0)
+    if (ID >= 0) {
+      //LOG(INFO) << "BV===== is small topology ID = " << ID << " nCol = " << nCol << " nRow = " << nRow;
       return ID;
-    else { //small rare topology (inside groups)
+    } else { //small rare topology (inside groups)
+      //LOG(INFO) << "BV===== SRT call groupFinder";
       int index = groupFinder(nRow, nCol);
       return (mTopologiesOverThreshold + index);
     }
@@ -70,9 +73,11 @@ int LookUp::findGroupID(int nRow, int nCol, const unsigned char patt[Cluster::kM
   // Big topology
   unsigned long hash = ClusterTopology::getCompleteHash(nRow, nCol, patt);
   auto ret = mDictionary.mFinalMap.find(hash);
-  if (ret != mDictionary.mFinalMap.end())
+  if (ret != mDictionary.mFinalMap.end()) {
+    //LOG(INFO) << "BV===== is big topology";
     return ret->second;
-  else { // Big rare topology (inside groups)
+  } else { // Big rare topology (inside groups)
+    //LOG(INFO) << "BV===== BRT call groupFinder";
     int index = groupFinder(nRow, nCol);
     return (mTopologiesOverThreshold + index);
   }

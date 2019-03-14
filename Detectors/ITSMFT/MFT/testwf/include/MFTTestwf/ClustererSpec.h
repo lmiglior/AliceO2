@@ -8,12 +8,14 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// @file   DigitDigestSpec.h
+/// @file   ClustererSpec.h
 
-#ifndef O2_MFT_DIGITDIGEST
-#define O2_MFT_DIGITDIGEST
+#ifndef O2_MFT_CLUSTERERDPL_H_
+#define O2_MFT_CLUSTERERDPL_H_
 
-#include "TFile.h"
+#include <fstream>
+
+#include "ITSMFTReconstruction/Clusterer.h"
 
 #include "Framework/DataProcessorSpec.h"
 #include "Framework/Task.h"
@@ -25,29 +27,24 @@ namespace o2
 namespace MFT
 {
 
-struct Digest {
-  int inputCount;
-  int digitsCount;
-};
-  
-class DigitDigest : public Task
+class ClustererDPL : public Task
 {
  public:
-  DigitDigest() = default;
-  ~DigitDigest() = default;
+  ClustererDPL() = default;
+  ~ClustererDPL() = default;
   void init(InitContext& ic) final;
   void run(ProcessingContext& pc) final;
 
  private:
   int mState = 0;
-  std::unique_ptr<TFile> mFile = nullptr;
+  std::unique_ptr<std::ifstream> mFile = nullptr;
+  std::unique_ptr<o2::ITSMFT::Clusterer> mClusterer = nullptr;
 };
 
-/// create a processor spec
-/// digest MFT digits sent by a digits reader
-framework::DataProcessorSpec getDigitDigestSpec();
+/// create a processor spec and run the MFT cluster finder
+framework::DataProcessorSpec getClustererSpec();
 
 } // namespace MFT
 } // namespace o2
 
-#endif /* O2_MFT_DIGITDIGEST */
+#endif /* O2_MFT_CLUSTERERDPL */

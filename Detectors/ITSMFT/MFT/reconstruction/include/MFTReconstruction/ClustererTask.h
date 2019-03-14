@@ -55,6 +55,7 @@ class ClustererTask : public FairTask
   bool isSelfManagedMode() const { return mSelfManagedMode; }
   void attachFairManagerIO();
   o2::ITSMFT::PixelReader* getReader() const { return (o2::ITSMFT::PixelReader*)mReader; }
+  void loadDictionary(std::string fileName) { mClusterer.loadDictionary(fileName); }
 
  private:
   bool mSelfManagedMode = false;                                                      ///< manages itself input output

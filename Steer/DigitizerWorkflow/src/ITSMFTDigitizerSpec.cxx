@@ -94,7 +94,7 @@ class ITSMFTDPLDigitizerTask
     // parameters of signal time response: flat-top duration, max rise time and q @ which rise time is 0
     mDigitizer.getParams().getSignalShape().setParameters(7500., 1100., 450.);
     mDigitizer.getParams().setChargeThreshold(150); // charge threshold in electrons
-    mDigitizer.getParams().setNoisePerPixel(0.); // noise level
+    mDigitizer.getParams().setNoisePerPixel(1.e-7); // noise level
     // init digitizer
     mDigitizer.init();
   }

@@ -37,6 +37,7 @@ ChipPixelData* DigitPixelReader::getNextChipData(std::vector<ChipPixelData>& chi
     mLastDigit = &((*mDigits)[mIdx++]);
   }
   auto chipID = mLastDigit->getChipIndex();
+  LOG(INFO) << "BV===== DigitPixelReader::getNextChipData(vector) mIdx " << mIdx << " chipID " << chipID;
   return getNextChipData(chipDataVec[chipID]) ? &chipDataVec[chipID] : nullptr;
 }
 
@@ -50,6 +51,8 @@ bool DigitPixelReader::getNextChipData(ChipPixelData& chipData)
     }
     mLastDigit = &((*mDigits)[mIdx++]);
   }
+  LOG(INFO) << "BV===== DigitPixelReader::getNextChipData mIdx " << mIdx << " mLastDigit row " << mLastDigit->getRow() << " column " << mLastDigit->getColumn() << " print: ";
+  chipData.print();
   chipData.clear();
   chipData.setStartID(mIdx - 1);
   chipData.setChipID(mLastDigit->getChipIndex());

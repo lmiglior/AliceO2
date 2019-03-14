@@ -12,19 +12,21 @@
 
 #include <vector>
 
-#include "Framework/ControlService.h"
-#include "MFTWorkflow/ClustererSpec.h"
+#include "MFTTestwf/ClustererSpec.h"
+
+#include "MFTBase/GeometryTGeo.h"
+
 #include "ITSMFTBase/Digit.h"
 #include "ITSMFTReconstruction/ChipMappingMFT.h"
-#include "DataFormatsITSMFT/CompCluster.h"
-#include "DataFormatsITSMFT/Cluster.h"
+#include "ITSMFTReconstruction/DigitPixelReader.h"
+
+#include "Framework/ControlService.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
-#include "DataFormatsITSMFT/ROFRecord.h"
-
-#include "ITSMFTReconstruction/DigitPixelReader.h"
 #include "DetectorsBase/GeometryManager.h"
-#include "MFTBase/GeometryTGeo.h"
+#include "DataFormatsITSMFT/CompCluster.h"
+#include "DataFormatsITSMFT/Cluster.h"
+#include "DataFormatsITSMFT/ROFRecord.h"
 
 using namespace o2::framework;
 
@@ -41,8 +43,11 @@ void ClustererDPL::init(InitContext& ic)
 
   mClusterer = std::make_unique<o2::ITSMFT::Clusterer>();
   mClusterer->setGeometry(geom);
-  mClusterer->setNChips(o2::ITSMFT::ChipMappingMFT::getNChips());
+  //mClusterer->setNChips(o2::ITSMFT::ChipMappingMFT::getNChips());
+  mClusterer->setNChips(geom->getNumberOfChips());
 
+  LOG(INFO) << "ClusterDPL::init created clusterer for " << o2::ITSMFT::ChipMappingMFT::getNChips() << " chips";
+  
   //mClusterer->setMaskOverflowPixels(false);
 
   auto filename = ic.options().get<std::string>("mft-dictionary-file");

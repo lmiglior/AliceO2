@@ -10,20 +10,20 @@
 
 /// @file   RecoWorkflow.cxx
 
-#include "MFTWorkflow/RecoWorkflow.h"
+#include "MFTTestwf/TestWorkflow.h"
 
-#include "MFTWorkflow/DigitReaderSpec.h"
-#include "MFTWorkflow/ClustererSpec.h"
-#include "MFTWorkflow/ClusterWriterSpec.h"
-#include "MFTWorkflow/TrackerSpec.h"
-//#include "MFTWorkflow/TrackWriterSpec.h"
+#include "MFTTestwf/DigitReaderSpec.h"
+#include "MFTTestwf/DigitDigestSpec.h"
+#include "MFTTestwf/DigestWriterSpec.h"
+#include "MFTTestwf/ClustererSpec.h"
+#include "MFTTestwf/ClusterWriterSpec.h"
 
 namespace o2
 {
 namespace MFT
 {
 
-namespace RecoWorkflow
+namespace TestWorkflow
 {
 
 framework::WorkflowSpec getWorkflow()
@@ -31,15 +31,16 @@ framework::WorkflowSpec getWorkflow()
   framework::WorkflowSpec specs;
 
   specs.emplace_back(o2::MFT::getDigitReaderSpec());
+  specs.emplace_back(o2::MFT::getDigitDigestSpec());
+  specs.emplace_back(o2::MFT::getDigestWriterSpec());
   specs.emplace_back(o2::MFT::getClustererSpec());
   specs.emplace_back(o2::MFT::getClusterWriterSpec());
-  specs.emplace_back(o2::MFT::getTrackerSpec());
-  //specs.emplace_back(o2::MFT::getTrackWriterSpec());
 
   return specs;
 }
 
-} // namespace RecoWorkflow
+} // namespace TestWorkflow
 
 } // namespace MFT
 } // namespace o2
+  

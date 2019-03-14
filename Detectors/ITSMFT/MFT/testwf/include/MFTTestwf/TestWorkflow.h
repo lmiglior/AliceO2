@@ -8,8 +8,8 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#ifndef O2_MFT_TESTWORKFLOW_H
-#define O2_MFT_TESTWORKFLOW_H
+#ifndef O2_MFT_TESTWORKFLOW_H_
+#define O2_MFT_TESTWORKFLOW_H_
 
 /// @file   TestWorkflow.h
 

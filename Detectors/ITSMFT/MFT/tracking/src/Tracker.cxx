@@ -7,24 +7,40 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
+///
+/// \file Tracker.cxx
+/// \brief
+///
 
-#ifndef O2_MFT_RECOWORKFLOW_H_
-#define O2_MFT_RECOWORKFLOW_H_
+#include "MFTTracking/Tracker.h"
 
-/// @file   RecoWorkflow.h
-
-#include "Framework/WorkflowSpec.h"
+#include "ReconstructionDataFormats/Track.h"
 
 namespace o2
 {
 namespace MFT
 {
 
-namespace RecoWorkflow
+Tracker::Tracker()
 {
-framework::WorkflowSpec getWorkflow();
+  //assert(mTracks != nullptr);
+}
+
+Tracker::~Tracker()
+{
+}
+
+void Tracker::clustersToTracks(const ROframe& event, std::ostream& timeBenchmarkOutputStream)
+{
+  mTracks.clear();
+  mTrackLabels.clear();
+
+  findTracks(event);
+}
+
+void Tracker::findTracks(const ROframe& event)
+{
 }
 
 } // namespace MFT
 } // namespace o2
-#endif

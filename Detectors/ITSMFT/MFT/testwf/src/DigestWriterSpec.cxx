@@ -15,8 +15,8 @@
 
 #include "TTree.h"
 
-#include "MFTWorkflow/DigestWriterSpec.h"
-#include "MFTWorkflow/DigitDigestSpec.h"
+#include "MFTTestwf/DigestWriterSpec.h"
+#include "MFTTestwf/DigitDigestSpec.h"
 
 #include "Framework/ControlService.h"
 
@@ -69,7 +69,7 @@ void DigestWriter::run(ProcessingContext& pc)
   //ofs.close();
   
   mState = 2;
-  pc.services().get<ControlService>().readyToQuit(true);
+  //pc.services().get<ControlService>().readyToQuit(true);
 }
 
 DataProcessorSpec getDigestWriterSpec()
