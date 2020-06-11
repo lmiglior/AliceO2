@@ -199,7 +199,9 @@ class ChipMappingMFT
   static constexpr std::int16_t getRUDetectorField() { return 0x0; }
 
   ///< get pattern of lanes on the RU served by a given RU type
-  Int_t getCablesOnRUType(Int_t ruType) const { return (0x1 << NChipsOnRUType[ruType]) - 1; }
+  //Int_t getCablesOnRUType(Int_t ruType) const { return (0x1 << NChipsOnRUType[ruType]) - 1; }
+  ///< used for decoding commissioning data
+  Int_t getCablesOnRUType(int ruType) const { return mCablesOnRUType[ruType]; }
 
   ///< get info on sw RU
   const RUInfo* getRUInfoSW(int ruSW) const { return &mRUInfo[ruSW]; }
@@ -279,6 +281,9 @@ class ChipMappingMFT
   std::vector<uint8_t> mCableHWFirstChip[NRUs]; ///< 1st chip of module (relative to the 1st chip of the stave) served by each cable
 
   std::array<std::vector<uint16_t>, NRUs> mRUGlobalChipID;
+
+  /// getCablesOnRUType for decoding MFT commissioning data
+  std::array<int, NRUTypes> mCablesOnRUType;
 
   ClassDefNV(ChipMappingMFT, 1)
 };

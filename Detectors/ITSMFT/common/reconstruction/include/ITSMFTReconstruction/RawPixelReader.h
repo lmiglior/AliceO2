@@ -864,8 +864,10 @@ class RawPixelReader : public PixelReader
 #ifdef _RAW_READER_ERROR_CHECKS_
         int cableHWPos = mMAP.cableHW2Pos(ruDecData.ruInfo->ruType, cableHW);
         ruDecData.cableLinkID[cableSW] = linkIDinRU;
-        ruLink->lanesWithData |= 0x1 << cableHWPos;    // flag that the data was seen on this lane
-        if (ruLink->lanesStop & (0x1 << cableHWPos)) { // make sure stopped lanes do not transmit the data
+        //ruLink->lanesWithData |= 0x1 << cableHWPos;    // flag that the data was seen on this lane
+        //if (ruLink->lanesStop & (0x1 << cableHWPos)) { // make sure stopped lanes do not transmit the data
+        ruLink->lanesWithData |= 0x1 << cableHW;    // flag that the data was seen on this lane
+        if (ruLink->lanesStop & (0x1 << cableHW)) { // make sure stopped lanes do not transmit the data
           ruLinkStat.errorCounts[GBTLinkDecodingStat::ErrDataForStoppedLane]++;
           LOG(ERROR) << "FEEId:" << OUTHEX(rdh->feeId, 4) << " Data received for stopped lane " << cableHW << " (sw:" << cableSW << ")";
           printRDH(rdh);

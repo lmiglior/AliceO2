@@ -1630,6 +1630,7 @@ ChipMappingMFT::ChipMappingMFT()
   int chipsOnRUType[NRUTypes]{0};
   int ctrChip = 0;
   for (int iRU = 0; iRU < NRUTypes; ++iRU) {
+    mCablesOnRUType[iRU] = 0;
     for (int iChip = 0; iChip < NChips; ++iChip) {
 
       auto module = ChipMappingData[iChip].module;
@@ -1683,7 +1684,10 @@ ChipMappingMFT::ChipMappingMFT()
       mCableHW2Pos[iRU][chInfo.cableHW] = chInfo.cableHWPos;
       mCableHW2SW[iRU][chInfo.cableHW] = chInfo.cableSW;
       mCableHWFirstChip[iRU][chInfo.cableHW] = 0;
-
+      
+      // getCablesOnRUType for decoding MFT commissioning data
+      mCablesOnRUType[iRU] |= 1 << chInfo.cableHW;
+      
       ++ctrChip;
       ++chipsOnRUType[iRU];
     }
