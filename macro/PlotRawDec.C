@@ -79,7 +79,7 @@ vector <string> getCanvas()
   return vecCanvas;
 }
 
-void RawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02__17_21_59__ROF10000.root",const Int_t vpulselow=50){
+void PlotRawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02__17_21_59__ROF10000.root",const char *datetime = ""){
 
   TFile *inputFile =new TFile(inFile);
   vector<int> vecChipDec=getChipDec();
@@ -88,7 +88,7 @@ void RawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02_
   vector<string> vecMap=getMapping();
   vector<string> vecHistoName=getHistoName();
   vector<string> vecCanvas=getCanvas();
-  Int_t vpulsel=vpulselow;
+
   
   TCanvas *c1[sizeVecDec];
   TH2F *hplot[sizeVecDec];
@@ -125,18 +125,23 @@ void RawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02_
       }
     }
   }
-  ofstream output;
-  output.open ("digit_coordinate.txt");
-  Int_t bin;
-  for(int k=0;k<sizeVecDec;k++){ // to store the coordinate for the thr scan
-  	for(int binx=0;binx<=hplot[k]->GetNbinsX();binx++){ 
-  	  for(int biny=0;biny<=hplot[k]->GetNbinsY();biny++){
-  	    bin=hplot[k]->GetBinContent(binx,biny);
-  	    if(bin!=0)output<<k<<" "<<binx-1<<" "<<biny-1<<" "<<bin-1<<" "<<vpulsel<<"\n";
-	    
-  	  }
-  	}
-      }
-      output.close();
+  for(int k=0;k<sizeVecDec;k++){   //to have the plot 
+    TString os3=vecCanvas[k];
+    c1[k]= new TCanvas();
+    c1[k]->SetName(os3);
+    c1[k]->SetTitle(os3);
+    c1[k]->GetName();
+    c1[k]->GetTitle();
+    c1[k]->cd(k);
+    gStyle->SetOptStat(0);
+    hplot[k]->Draw("colz");
+    std::string histnamesave = "hplot";
+    histnamesave += std::to_string(k);
+    histnamesave += "_";
+    histnamesave += datetime;
+    histnamesave += ".pdf";
+    const char *finalname =  histnamesave.c_str();
+    hplot[k]->SaveAs(finalname);
 
+  }
 }

@@ -1,13 +1,13 @@
 #!/bin/bash
 echo "Decoding raw data files"
-echo "Input, output, complete file or not (0 or 1), ROF number, VPULSEL"
+echo "Input, output, complete file or not (0 or 1), ROF number"
 RAWDATANAME=$1
 ROOTNAME=$2
 BOOLCOMPLETE=$3
 ROFNUMBER=$4
-VPULSEL=$5
 
-current_time=$(date "+%y%m%d_%H%M%S")
+
+current_time=$(date "+%y%m%d%_H%M%S")
 
 ROOTNAMEDEF=$ROOTNAME\_$current_time
 ROOTNAMEDEFROF=$ROOTNAME\_ROF$ROFNUMBER\_$current_time
@@ -30,19 +30,11 @@ root.exe -l -b -q macro/mapping.C+ | tee mapping\_$current_time.out
 
 echo "Chips name analysis done!!!"
 if [ "$BOOLCOMPLETE" = 1 ]; then
-    root -l -b -q macro/RawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEF.root\",$VPULSEL\)
+    root -l -b -q macro/PlotRawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEF.root\",\"$current_time\"\)
 fi
 if [ "$BOOLCOMPLETE" = 0 ]; then
-    root -l -q macro/RawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEFROF.root\",$VPULSEL\)
+    root -l -b -q macro/PlotRawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEFROF.root\",\"$current_time\"\)
 fi
 
-DIGITFILE=digit_coordinates_$VPULSEL.txt
-
-echo "Creation de txt file $DIGITFILE"
-
-mv digit_coordinate.txt macro/$DIGITFILE
-mv macro/$DIGITFILE .
-
-rm /localhome/mft/alice/output_raw/$ROOTNAMEDEFROF.root
 rm *.out
 
