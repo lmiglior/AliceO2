@@ -33,8 +33,8 @@ if [ "$BOOLCOMPLETE" = 1 ]; then
     root -l -b -q macro/PlotRawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEF.root\",\"$current_time\"\)
 fi
 if [ "$BOOLCOMPLETE" = 0 ]; then
-    root -l -b -q macro/PlotRawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEFROF.root\",\"$current_time\"\)
+    root -l macro/PlotRawDec.C\(\"/localhome/mft/alice/output_raw/$ROOTNAMEDEFROF.root\",\"$current_time\"\)
 fi
 
-rm *.out
+#rm *.out
 

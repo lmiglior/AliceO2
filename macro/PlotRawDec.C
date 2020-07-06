@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+#include <string>
 
 
 using namespace o2::base;
@@ -79,7 +80,7 @@ vector <string> getCanvas()
   return vecCanvas;
 }
 
-void PlotRawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02__17_21_59__ROF10000.root",const char *datetime = ""){
+void PlotRawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07_02__17_21_59__ROF10000.root",const char *datatime=" "){
 
   TFile *inputFile =new TFile(inFile);
   vector<int> vecChipDec=getChipDec();
@@ -135,13 +136,13 @@ void PlotRawDec(const Char_t *inFile="/localhome/mft/alice/O2/macro/data-2020_07
     c1[k]->cd(k);
     gStyle->SetOptStat(0);
     hplot[k]->Draw("colz");
-    std::string histnamesave = "hplot";
+    std::string histnamesave = "Plots/hplot";
     histnamesave += std::to_string(k);
     histnamesave += "_";
-    histnamesave += datetime;
+    histnamesave += datatime;
     histnamesave += ".pdf";
     const char *finalname =  histnamesave.c_str();
-    hplot[k]->SaveAs(finalname);
+    c1[k]->SaveAs(finalname);
 
   }
 }

@@ -5,6 +5,10 @@ from pandas import Series, DataFrame
 import numpy as np
 import glob
 from scipy import special
+from scipy.optimize import curve_fit
+import time
+def erfunc(x,a,b,c,d):
+    return a*special.erf((x-b)/c)+d
 
 AllFiles=np.sort(glob.glob("digit_coo*.txt"))
 df=pd.DataFrame()
@@ -26,21 +30,32 @@ chipnumber=set(df["chip"])
 print("How many chip?",len(chipnumber))
 
 df_new_collection={}
+#vpulse=pd.Series()
+#hits=pd.Series()
 
-for ch in range(0,1):
-     df_collection[ch]=df[(df["chip"]==0)]
+
+for ch in range(len(chipnumber)):
+     df_collection[ch]=df[(df["chip"]==ch)]
      df_collection[ch].reset_index(inplace=True)
+     #print(df_collection[0])
      for col in range(0,1024):
-        df_new_collection=df_collection[ch][(df_collection[ch]["col"]==col)]
-        #x=df_new_collection.sub(["vpulsel"],axis='columns')
-        hits=df_new_collection["trig"]
-        #.diff().fillna(0)
-        vpulse=(df_new_collection["vpulsel"])
-        #.diff().fillna(0))
-        #z=(y/x).dropna()
-        #print(vpulse)
-#        plt.scatter(hits, vpulse, c="g", alpha=0.5, marker=r'$\clubsuit$')
-        #print(z)
+         #vpulse=df_collection[ch].loc[col,'vpulsel']
+         #print(vpulse)
+         df_new_collection=df_collection[ch][(df_collection[ch]["col"]==col)]
+         hits=df_new_collection["trig"]
+         vpulse=df_new_collection["vpulsel"]
+         #print(df_new_collection)
+         popt, pcov = curve_fit(erfunc,vpulse,hits, maxfev=100000,p0=[25,160,100,26])
+#         print(erfunc(vpulse,*popt))
+         print(time.clock())
+         #plt.scatter(vpulse,hits,c="b",marker=r'$\clubsuit$')
+         #plt.plot(vpulse,erfunc(vpulse,*popt))
+         break
+      #.diff().fillna(0))
+     #print(vpulse)
+#        print(vpul        #plt.plot(vpulse, hits, c="g", alpha=0.5, marker=r'$\clubsuit$')
+    #plt.plot(hits,special.erf(hits))
+                #print(z)
 plt.show()
         
 
