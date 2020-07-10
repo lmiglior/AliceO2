@@ -6,6 +6,9 @@
 #include <FairLogger.h>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <fstream>
+
 
 #include "ITSMFTReconstruction/ChipMappingMFT.h"
 #include "ITSMFTReconstruction/RUDecodeData.h"
@@ -25,6 +28,8 @@
 
 void run_rawdecoding_mft(std::string inpName = "06282019_1854_output.bin", // input binary data file name
                          std::string outDigName = "raw2mftdigits.root",    // name for optinal digits tree
+			 int complete=0,
+			 int ROF=200,
                          bool padding = true,                              // payload in raw data comes in 128 bit CRU words
                          bool page8kb = true,                              // full 8KB CRU pages are provided (no skimming applied)
                          int nTriggersToCache = 1025,                      // number of triggers per link to cache (> N 8KB CRU pages per superpage)
@@ -48,6 +53,7 @@ void run_rawdecoding_mft(std::string inpName = "06282019_1854_output.bin", // in
   int rofEntry = 0, nrofdig = 0;
   std::unique_ptr<TFile> outFileDig;
   std::unique_ptr<TTree> outTreeDig; // output tree with digits
+  std::vector<int> tab_ID; 
 
   if (!outDigName.empty()) { // output to digit is requested
     outFileDig = std::make_unique<TFile>(outDigName.c_str(), "recreate");
@@ -80,9 +86,25 @@ void run_rawdecoding_mft(std::string inpName = "06282019_1854_output.bin", // in
 
       printf("ROF %7d ch: %5d IR: ", roFrame, chipData.getChipID());
       irHB.print();
+      int iterChip=0;
+
+      for(int n=0;n<(int)tab_ID.size();n++)
+	if(tab_ID[n]!=(int)chipData.getChipID())
+	  iterChip++;
+
+      if(iterChip==(int)tab_ID.size())
+	tab_ID.push_back(chipData.getChipID());
 
     } // << store digits
     //
+    std::fstream output;
+    output.open("/home/o2flp/alice/output_raw/Chip_ID.txt", std::ios::out);
+
+    for(int n=0;n<(int)tab_ID.size();n++)
+      output << tab_ID[n] << std::endl;
+
+    output.close();
+    if(complete==0){if ((int)roFrame > ROF) break;}
   }
 
   if (outTreeDig) {
