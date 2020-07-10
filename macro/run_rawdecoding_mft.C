@@ -88,24 +88,25 @@ void run_rawdecoding_mft(std::string inpName = "06282019_1854_output.bin", // in
       irHB.print();
       int iterChip=0;
 
-      for(int n=0;n<(int)tab_ID.size();n++)
-	if(tab_ID[n]!=(int)chipData.getChipID())
-	  iterChip++;
+      if(find (tab_ID.begin(), tab_ID.end(), chipData.getChipID()) == tab_ID.end()){ // ChipID not found in tab_ID
+            tab_ID.push_back(chipData.getChipID());
+      }
 
-      if(iterChip==(int)tab_ID.size())
-	tab_ID.push_back(chipData.getChipID());
 
     } // << store digits
     //
-    std::fstream output;
-    output.open("/home/o2flp/alice/output_raw/Chip_ID.txt", std::ios::out);
 
-    for(int n=0;n<(int)tab_ID.size();n++)
-      output << tab_ID[n] << std::endl;
 
-    output.close();
     if(complete==0){if ((int)roFrame > ROF) break;}
-  }
+  } // END : Loop over the Chip Data
+ 
+  std::fstream output;
+  output.open("/home/o2flp/raphael/output_raw/Chip_ID.txt", std::ios::out);
+
+  for(int n=0;n<(int)tab_ID.size();n++)
+    output << tab_ID[n] << std::endl;
+
+  output.close();
 
   if (outTreeDig) {
     // register last ROF
