@@ -7,9 +7,25 @@
 #include <fstream>
 #include <stdio.h>
 #include <cmath>
-
+#include <stdio.h>
+#include <math.h>
+#include "TROOT.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TBrowser.h"
+#include "TMath.h"
+#include "TRandom.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include <ctime>
+#include <algorithm> 
+#include "TString.h"
 using namespace std;
 
+bool SortFunc (int i,int j)
+{
+ return (i<j); 
+}
 
 void CalculateDerivative(std::vector<std::pair<uint16_t,uint16_t>> data, std::vector<std::pair<uint16_t,float>> &derivative){
     
@@ -65,14 +81,13 @@ void AnalysisData(std::vector<std::pair<uint16_t,float>> data, double& mean, dou
     ys =it->second;
     sum += ys * (xs - mean) * (xs - mean);
   }
-    if (sqrt(abs(sum / norm)) > 500) {
+  if (sqrt(abs(sum / norm)) > 500) {
     noise = 0.;
     return;
   }
   noise = sqrt(abs(sum / norm));
   sdtnoise=sqrt(sqrt(abs(sum*sum/norm))- pow(noise, 2));
 }
-
 vector<string> glob(const string& pattern) { //import files function  
   glob_t glob_result;
   memset(&glob_result, 0, sizeof(glob_result));
@@ -89,10 +104,10 @@ vector<string> glob(const string& pattern) { //import files function
   globfree(&glob_result);
   return filenames;
 }
-std::vector <int> getChipDec()
+vector <int> getChipDec()
 {
    fstream inputDec; //read chip_ID.txt in order to have the number of chip in raw data file
-  inputDec.open("/home/o2flp/alice/output_raw/Chip_ID.txt", ios_base::in);
+  inputDec.open("/home/o2flp/alice/output_raw/trans.txt", ios_base::in);
   vector <int> vecChipDec;
   int ChipDecod;
   int sizeVecDec=vecChipDec.size();
@@ -117,19 +132,39 @@ uint16_t GetCol(uint32_t pixelId)
   return(pixelId & 0x3FF);
 }
 
+vector <string> getMapping()
+{
+  fstream inputMap; //read file with mapping converted with RU parameteres
+  inputMap.open("/home/o2flp/alice/output_raw/canvas.txt",ios_base::in);
+  vector <string> vecMap;
+  string word;
+  while(inputMap >> word)
+    {
+      vecMap.push_back(word);
+    }
+  inputMap.close();
+  return vecMap;
+}
+
 // uint16_t erfunc(uint16_t x,int a,int b){
 //   return a*(1+TMath::Erf((x-b)/(sqrt(2)*b)));
 // }
-void creationScurve(){
+void creationScurve(const int backbias=0){
   
+  std::time_t datatime = std::time(nullptr);
    std::vector<std::string> filenames=glob("Thr/digit_coo*.txt");
    std::cout<<"How many files? "<<filenames.size()<<std::endl;
-   vector<int> vecChipDec;
+   vector<int> vecChipDec=getChipDec();
    int sizeVecDec=vecChipDec.size();
+   vector<string> vecMap=getMapping();
    uint32_t pixelId;
+   int bbias = backbias;
    uint16_t transId, row, col;
    std::map<uint32_t,std::vector<std::pair<uint16_t,uint16_t>>> allData;
-   
+   TCanvas *c1[sizeVecDec];
+   TH1F *hplot[sizeVecDec];
+   TH1F *hplot2[sizeVecDec];
+
    for(int i=0;i<filenames.size();i++){
      ifstream file;
      file.open(filenames[i],ios::in);
@@ -138,7 +173,17 @@ void creationScurve(){
        allData[GetPixelId(itrans,icol,irow)].push_back(std::make_pair(ivpulse,ihits));
     
      file.close();
-   }    
+   }
+   std::sort (vecChipDec.begin(), vecChipDec.end(), SortFunc);
+
+   for(int i=0;i<sizeVecDec;i++){
+     hplot[i]=new TH1F(Form("hThresh%d",vecChipDec[i]),Form("Threshold Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),125,0.,500.);
+     hplot[i]->GetXaxis()->SetTitle("Threshold (#e)");
+     hplot[i]->GetYaxis()->SetTitle("# Pixels");
+     hplot2[i]=new TH1F(Form("hNoise%d",vecChipDec[i]),Form("Noise Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),60, 0., 30.);
+     hplot2[i]->GetXaxis()->SetTitle("Noise (#e)");
+     hplot2[i]->GetYaxis()->SetTitle("# Pixels");
+   }
 
    for(auto it =allData.begin();it !=allData.end();it++){ // loop over pixelId
      double mean, noise, sdtmean, sdtnoise;
@@ -146,8 +191,42 @@ void creationScurve(){
      CalculateDerivative(it->second, derivative);
      AnalysisData(derivative, mean, sdtmean, noise, sdtnoise);
      uint32_t pixel = it->first;
-     printf("%4d %4d %4d %lf %lf %lf %lf\n",GetTransceiverId(pixel), GetRow(pixel), GetCol(pixel),mean,  sdtmean, noise, sdtnoise);
-
-  
-   }   
+     transId=GetTransceiverId(pixel);
+     //     cout<<(int)transId<<endl;
+     //     printf("%4d %4d %4d %lf %lf %lf %lf\n",GetTransceiverId(pixel), GetRow(pixel), GetCol(pixel),mean,  sdtmean, noise, sdtnoise);
+     for(int j=0;j<sizeVecDec;j++){
+       if((int)transId==vecChipDec[j]){
+	 hplot[j]->Fill(sdtmean);
+	 hplot2[j]->Fill(sdtnoise);
+       }
+     }  
+   }
+   char *histoname = new char[sizeVecDec];
+   for(int k=0;k<sizeVecDec;k++){   //to have the plot
+     TString os3=vecMap[k];
+     c1[k]= new TCanvas(histoname,histoname,1000,1000);
+     c1[k]->Divide(1,2,0,0);
+      c1[k]->SetName(os3);
+      c1[k]->SetTitle(os3);
+      c1[k]->GetName();
+      c1[k]->GetTitle();
+     c1[k]->cd(1);
+     gPad->SetTickx(1);
+     gPad->SetBottomMargin(0.1);
+     hplot[k]->Draw();
+     c1[k]->cd(2);
+     gPad->SetTicky(1);
+     hplot2[k]->Draw();
+     std::string histnamesave = "Plots/hThrs_";
+     histnamesave += vecMap[k];
+     histnamesave += "_trans";
+     histnamesave += std::to_string(vecChipDec[k]);
+     histnamesave += "_BB";
+     histnamesave += std::to_string( bbias );
+     histnamesave += "V_";
+     histnamesave += std::to_string(datatime);
+     histnamesave += ".pdf";
+     const char *finalname =  histnamesave.c_str();
+     c1[k]->SaveAs(finalname);
+   }
 }

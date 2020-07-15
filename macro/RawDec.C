@@ -107,6 +107,8 @@ void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_
   vector<string> vecHistoName=getHistoName();
   vector<string> vecCanvas=getCanvas();
   Int_t vpulsel=vpulselow;
+  Int_t vpulseh=170;
+  Int_t chargeinj=vpulseh-vpulsel;
   vector<int> vecTrans=getTrans();
   TCanvas *c1[sizeVecDec];
   TH2F *hplot[sizeVecDec];
@@ -151,7 +153,7 @@ void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_
   	for(int binx=0;binx<=hplot[k]->GetNbinsX();binx++){ 
   	  for(int biny=0;biny<=hplot[k]->GetNbinsY();biny++){
   	    bin=hplot[k]->GetBinContent(binx,biny);
-  	    if(bin!=0)output<<kk<<" "<<binx-1<<" "<<biny-1<<" "<<bin-1<<" "<<vpulsel<<"\n";
+  	    if(bin!=0)output<<kk<<" "<<binx-1<<" "<<biny-1<<" "<<bin-1<<" "<<chargeinj<<"\n";
 	    
   	  }
   	}

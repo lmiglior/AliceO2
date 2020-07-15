@@ -30,7 +30,7 @@ fi
 
 echo "Done!!!"
 echo "Let's see the digits"
-root.exe -l -b -q macro/mapping.C+ | tee mapping\_$current_time.out
+root.exe -l -b -q macro/mapping_v2.c+ | tee mapping\_$current_time.out
 
 echo "Chips name analysis done!!!"
 if [ "$BOOLCOMPLETE" = 1 ]; then
@@ -40,7 +40,9 @@ if [ "$BOOLCOMPLETE" = 0 ]; then
     root -l -q macro/RawDec.C\(\"/home/o2flp/alice/output_raw/$ROOTNAMEDEFROF.root\",$VPULSEL\)
 fi
 
-DIGITFILE=digit_coordinates_$VPULSEL.txt
+CHARGEINJ=`expr 170 - $VPULSEL`
+
+DIGITFILE=digit_coordinates_$CHARGEINJ.txt
 
 echo "Creation de txt file $DIGITFILE"
 

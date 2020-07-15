@@ -118,7 +118,7 @@ void mapping_v2()
 		output_histoname<<os2.str()<<endl;
 
 		std::ostringstream os3;
-		os3<< "TCanvas"<<chipIDglo<<"";
+		os3<<"Half-" << half<<"-Face-"<<faceID <<"-Disk-"<<disk<<"-Zone-"<<zone;
 		output_canvas<<os3.str()<<endl;
 	
 		std::ostringstream os4;
