@@ -1,6 +1,7 @@
 #include <glob.h> // glob(), globfree()
 #include <string.h> // memset()
 #include <vector>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -21,7 +22,7 @@
 #include <algorithm> 
 #include "TString.h"
 using namespace std;
-
+using namespace std::chrono;
 bool SortFunc (int i,int j)
 {
  return (i<j); 
@@ -76,6 +77,7 @@ void AnalysisData(std::vector<std::pair<uint16_t,float>> data, double& mean, dou
   mean = sum / norm;
   sdtmean=sqrt((sum*sum/norm)- pow(mean, 2));
   sum = 0.0;
+
   for(auto it=data.begin();it!=data.end();it++){ // loop over measurements at given VPULSE
     xs =it->first;
     ys =it->second;
@@ -149,10 +151,10 @@ vector <string> getMapping()
 // uint16_t erfunc(uint16_t x,int a,int b){
 //   return a*(1+TMath::Erf((x-b)/(sqrt(2)*b)));
 // }
-void creationScurve(const int backbias=0){
-  
-  std::time_t datatime = std::time(nullptr);
-   std::vector<std::string> filenames=glob("Thr/digit_coo*.txt");
+void creationScurve(const char *dataraw=" ",const char *datatime=" ",const int backbias=0){
+  gROOT->SetBatch(kTRUE);
+  std::time_t dttime = std::time(nullptr);
+   std::vector<std::string> filenames=glob("Thr/test_lyon/digit_coo*.txt");
    std::cout<<"How many files? "<<filenames.size()<<std::endl;
    vector<int> vecChipDec=getChipDec();
    int sizeVecDec=vecChipDec.size();
@@ -162,28 +164,45 @@ void creationScurve(const int backbias=0){
    uint16_t transId, row, col;
    std::map<uint32_t,std::vector<std::pair<uint16_t,uint16_t>>> allData;
    TCanvas *c1[sizeVecDec];
+   TCanvas *c2[sizeVecDec];
    TH1F *hplot[sizeVecDec];
    TH1F *hplot2[sizeVecDec];
+   TH2F *hplot3[sizeVecDec];
+   TH2F *hplot4[sizeVecDec];
 
    for(int i=0;i<filenames.size();i++){
      ifstream file;
      file.open(filenames[i],ios::in);
      uint16_t itrans,icol,irow,ihits,ivpulse;
      while(file>>itrans>>icol>>irow>>ihits>>ivpulse)
-       allData[GetPixelId(itrans,icol,irow)].push_back(std::make_pair(ivpulse,ihits));
-    
+       allData[GetPixelId(itrans,icol,irow)].push_back(std::make_pair(ivpulse,ihits));    
      file.close();
    }
    std::sort (vecChipDec.begin(), vecChipDec.end(), SortFunc);
-
+   auto start = high_resolution_clock::now();
+   int scale=2;
    for(int i=0;i<sizeVecDec;i++){
-     hplot[i]=new TH1F(Form("hThresh%d",vecChipDec[i]),Form("Threshold Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),125,0.,500.);
-     hplot[i]->GetXaxis()->SetTitle("Threshold (#e)");
+     hplot[i]=new TH1F(Form("hThresh%d",vecChipDec[i]),Form("Threshold Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),60,4.,31.);
+     hplot[i]->GetXaxis()->SetTitle("Threshold (#DAC)");
      hplot[i]->GetYaxis()->SetTitle("# Pixels");
-     hplot2[i]=new TH1F(Form("hNoise%d",vecChipDec[i]),Form("Noise Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),60, 0., 30.);
-     hplot2[i]->GetXaxis()->SetTitle("Noise (#e)");
+     hplot2[i]=new TH1F(Form("hNoise%d",vecChipDec[i]),Form("Noise Distribution  TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),60, 0., 3.);
+     hplot2[i]->GetXaxis()->SetTitle("Noise (#DAC)");
      hplot2[i]->GetYaxis()->SetTitle("# Pixels");
+     hplot3[i]=new TH2F(Form("hMap%d",vecChipDec[i]),Form("Threshold Map TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),1024/2, -0.5, 1023.5, 512/2, -0.5, 511.5);
+     hplot3[i]->GetXaxis()->SetTitle("Column");
+     hplot3[i]->GetYaxis()->SetTitle("Row");
+     hplot3[i]->GetZaxis()->SetTitle("Threshold [#DAC]");
+     hplot3[i]->SetMaximum(30);
+     hplot3[i]->SetMinimum(0);
+     hplot4[i]=new TH2F(Form("hMapNoise%d",vecChipDec[i]),Form("Noise Map TransID %d (%s)",vecChipDec[i],vecMap[i].c_str()),1024/2, -0.5, 1023.5, 512/2, -0.5, 511.5);
+     hplot4[i]->GetXaxis()->SetTitle("Column");
+     hplot4[i]->GetYaxis()->SetTitle("Row");
+     hplot4[i]->GetZaxis()->SetTitle("Noise [#DAC]");
+     hplot4[i]->SetMaximum(3);
+     hplot4[i]->SetMinimum(0);
+     
    }
+   char *histoname = new char[sizeVecDec];
 
    for(auto it =allData.begin();it !=allData.end();it++){ // loop over pixelId
      double mean, noise, sdtmean, sdtnoise;
@@ -193,15 +212,17 @@ void creationScurve(const int backbias=0){
      uint32_t pixel = it->first;
      transId=GetTransceiverId(pixel);
      //     cout<<(int)transId<<endl;
-     //     printf("%4d %4d %4d %lf %lf %lf %lf\n",GetTransceiverId(pixel), GetRow(pixel), GetCol(pixel),mean,  sdtmean, noise, sdtnoise);
+     //          printf("%4d %4d %4d %lf %lf %lf %lf\n",GetTransceiverId(pixel), GetRow(pixel), GetCol(pixel),mean,  sdtmean, noise, sdtnoise);
      for(int j=0;j<sizeVecDec;j++){
        if((int)transId==vecChipDec[j]){
-	 hplot[j]->Fill(sdtmean);
-	 hplot2[j]->Fill(sdtnoise);
+     	 hplot[j]->Fill(mean);
+  	 hplot2[j]->Fill(noise);
+	 hplot3[j]->Fill(GetCol(pixel),GetRow(pixel),mean);
+	 hplot4[j]->Fill(GetCol(pixel),GetRow(pixel),noise);
        }
-     }  
-   }
-   char *histoname = new char[sizeVecDec];
+      } 
+    }
+   gStyle->SetPalette(55);
    for(int k=0;k<sizeVecDec;k++){   //to have the plot
      TString os3=vecMap[k];
      c1[k]= new TCanvas(histoname,histoname,1000,1000);
@@ -217,16 +238,56 @@ void creationScurve(const int backbias=0){
      c1[k]->cd(2);
      gPad->SetTicky(1);
      hplot2[k]->Draw();
-     std::string histnamesave = "Plots/hThrs_";
+     std::string histnamesave = "Plots/test_cern/hThrs_";
      histnamesave += vecMap[k];
      histnamesave += "_trans";
      histnamesave += std::to_string(vecChipDec[k]);
      histnamesave += "_BB";
      histnamesave += std::to_string( bbias );
      histnamesave += "V_";
-     histnamesave += std::to_string(datatime);
+     //     histnamesave += std::to_string(datatime);
+     histnamesave += "_raw_"; 
+     histnamesave += dataraw; 
+     histnamesave += "_created_";
+     histnamesave += datatime;
      histnamesave += ".pdf";
      const char *finalname =  histnamesave.c_str();
      c1[k]->SaveAs(finalname);
+ 
+     c2[k]= new TCanvas(Form("Map%d",k),Form("Map%d",k),1000,1000);
+     c2[k]->SetRightMargin(0.2);
+     c2[k]->Divide(1,2);
+     c2[k]->cd(1);
+     gStyle->SetOptStat (kFALSE);
+     gStyle->SetOptTitle(kTRUE);
+
+     //gPad->SetTickx(1);
+     gPad->SetBottomMargin(0.1);
+     hplot3[k]->Draw("colz PMC");
+     c2[k]->cd(2);
+     gStyle->SetOptStat (kFALSE);
+     gStyle->SetOptTitle(kTRUE);
+
+     hplot4[k]->Draw("colz PMC");
+     std::string histnamesave2 = "Plots/test_cern/hMap_";
+     histnamesave2 += vecMap[k];
+     histnamesave2 += "_trans";
+     histnamesave2 += std::to_string(vecChipDec[k]);
+     histnamesave2 += "_BB";
+     histnamesave2 += std::to_string( bbias );
+     histnamesave2 += "V_";
+     //     histnamesave += std::to_string(datatime);
+     histnamesave2 += "_raw_";
+     histnamesave2 += dataraw;
+     histnamesave2 += "_created_";
+     histnamesave2 += datatime;
+     histnamesave2 += ".pdf";
+     const char *finalname2 =  histnamesave2.c_str();
+     c2[k]->SaveAs(finalname2);
    }
+   auto stop = high_resolution_clock::now(); 
+   auto duration = duration_cast<microseconds>(stop - start); 
+   cout << "Time taken: "
+	<< duration.count() << " microseconds" << endl; 
+ 
 }

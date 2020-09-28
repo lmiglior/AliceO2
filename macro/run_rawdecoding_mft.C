@@ -90,18 +90,22 @@ void run_rawdecoding_mft(std::string inpName = "06282019_1854_output.bin", // in
       printf("ROF %7d ch: %5d IR: ", roFrame, chipData.getChipID());
       irHB.print();
       int iterChip=0;
-
-      if(find (tab_ID.begin(), tab_ID.end(), chipData.getChipID()) == tab_ID.end()){ // ChipID not found in tab_ID
+      
+   //    if(complete==0){
+   // 	if ((int)roFrame > ROF) break;
+   // 	if(find (tab_ID.begin(), tab_ID.end(), chipData.getChipID()) == tab_ID.end()){ // ChipID not found in tab_ID
+   //          tab_ID.push_back(chipData.getChipID());
+   // }
+   //    }
+   if(find (tab_ID.begin(), tab_ID.end(), chipData.getChipID()) == tab_ID.end()){ // ChipID not found in tab_ID
             tab_ID.push_back(chipData.getChipID());
-      }
-
+   }
 
     } // << store digits
     //
 
 
-    if(complete==0){if ((int)roFrame > ROF) break;}
-  } // END : Loop over the Chip Data
+     } // END : Loop over the Chip Data
  
   std::fstream output;
   output.open("/home/o2flp/alice/output_raw/Chip_ID.txt", std::ios::out);

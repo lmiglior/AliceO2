@@ -97,7 +97,7 @@ vector <string> getCanvas()
   return vecCanvas;
 }
 
-void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_161243.root",const Int_t vpulselow=50){
+void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/data-charge29-ninj50-2020_08_07__16_44_19__.raw_200807_170057.root",const Int_t vpulselow=50){
 
   TFile *inputFile =new TFile(inFile);
   vector<int> vecChipDec=getChipDec();
@@ -110,21 +110,27 @@ void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_
   Int_t vpulseh=170;
   Int_t chargeinj=vpulseh-vpulsel;
   vector<int> vecTrans=getTrans();
-  TCanvas *c1[sizeVecDec];
-  TH2F *hplot[sizeVecDec];
-  char *histoname = new char[sizeVecDec];
+  //  TCanvas *c1[sizeVecDec];
+  //TH2F *hplot[sizeVecDec];
+  //char *histoname = new char[sizeVecDec];
   //double binx,biny;
-
-  for(int i=0;i<sizeVecDec;i++){
-    hplot[i] = new TH2F(histoname,histoname,1024,0,1024,512,0,512);
-    TString os1=vecMap[i];
-    TString os2=vecHistoName[i];
-    hplot[i]->SetName(os2);
-    hplot[i]->SetTitle(os1);
-     hplot[i]->GetName();
-     hplot[i]->GetTitle();
- }
   
+  // for(int i=0;i<sizeVecDec;i++){
+ //    hplot[i] = new TH2F(histoname,histoname,1024,0,1024,512,0,512);
+ //    TString os1=vecMap[i];
+ //    TString os2=vecHistoName[i];
+ //    hplot[i]->SetName(os2);
+ //    hplot[i]->SetTitle(os1);
+ //     hplot[i]->GetName();
+ //     hplot[i]->GetTitle();
+ // }
+  vector<vector<vector<short int>>> vecColRow(sizeVecDec);
+  for(int i=0;i<sizeVecDec;i++){
+    for(int col=0;col<1024;col++){
+      std::vector<short int> vector1(512,0);
+      vecColRow[i].push_back(vector1);
+   }
+  }
   TTree *tree=(TTree*)inputFile->Get("o2sim");
   auto nentries=tree->GetEntries();
   std::vector<o2::itsmft::Digit>* digArr = nullptr;
@@ -132,16 +138,14 @@ void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_
   for(int i=0;i<nentries;i++){
     tree->GetEvent(i);
     Int_t nd = digArr->size();
-    cout<<"Events? "<<nd<<endl;
-   
+    cout<<"Number of digits: "<<nd<<endl;
     while (nd--) {
     Int_t binx,biny, bin, binmax;
       const Digit* d = &(*digArr)[nd];
       Int_t chipID = d->getChipIndex();
       for(int j=0;j<=sizeVecDec;j++){
-	if (chipID==vecChipDec[j]){
-	  hplot[j]->Fill(d->getColumn(), d->getRow());
-	}
+	if (chipID==vecChipDec[j])
+	  vecColRow[j][d->getColumn()][d->getRow()]++;
       }
     }
   }
@@ -150,14 +154,12 @@ void RawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/fd_ROF250_200707_
   Int_t bin;
   for(int k=0;k<sizeVecDec;k++){ // to store the coordinate for the thr scan
     int kk = vecTrans[k];
-  	for(int binx=0;binx<=hplot[k]->GetNbinsX();binx++){ 
-  	  for(int biny=0;biny<=hplot[k]->GetNbinsY();biny++){
-  	    bin=hplot[k]->GetBinContent(binx,biny);
-  	    if(bin!=0)output<<kk<<" "<<binx-1<<" "<<biny-1<<" "<<bin-1<<" "<<chargeinj<<"\n";
-	    
+  	for(int binx=0;binx<1024;binx++){ 
+  	  for(int biny=0;biny<512;biny++){
+  	    bin=vecColRow[k][binx][biny];
+  	    if(bin!=0)output<<kk<<" "<<binx-1<<" "<<biny-1<<" "<<bin-1<<" "<<vpulsel<<"\n";
   	  }
   	}
       }
       output.close();
-
 }

@@ -80,7 +80,7 @@ vector <string> getCanvas()
   return vecCanvas;
 }
 
-void PlotRawDec(const Char_t *inFile="/home/o2flp/alice/O2/macro/data-2020_07_02__17_21_59__ROF10000.root",const char *datatime=" "){
+void PlotRawDec(const Char_t *inFile="/home/o2flp/alice/output_raw/data-d4-f1-2020_09_03__14_10_16__.raw_200904_183137.root",const char *dataraw=" ",const char *datatime=" "){
 
   TFile *inputFile =new TFile(inFile);
   vector<int> vecChipDec=getChipDec();
@@ -120,9 +120,11 @@ void PlotRawDec(const Char_t *inFile="/home/o2flp/alice/O2/macro/data-2020_07_02
     Int_t binx,biny, bin, binmax;
       const Digit* d = &(*digArr)[nd];
       Int_t chipID = d->getChipIndex();
-      for(int j=0;j<=sizeVecDec;j++){
+      for(int j=0;j<sizeVecDec;j++){
 	if (chipID==vecChipDec[j]){
 	  hplot[j]->Fill(d->getColumn(), d->getRow());
+	  // if(!d->getRow()){cout<<"h"<<j<<"  row problem"<<endl;}
+	  //if(!d->getColumn()){cout<<"h"<<j<<"  col problem"<<endl;}
 	}
       }
     }
@@ -141,11 +143,14 @@ void PlotRawDec(const Char_t *inFile="/home/o2flp/alice/O2/macro/data-2020_07_02
     std::string histnamesave = "Plots/hist_";
     //    histnamesave += std::to_string(vecHistoName[k]);
     histnamesave +=os2;
-    histnamesave += "_";
+    histnamesave += "_raw_"; 
+    histnamesave += dataraw; 
+    histnamesave += "_created_";
     histnamesave += datatime;
     histnamesave += ".pdf";
     const char *finalname =  histnamesave.c_str();
     c1[k]->SaveAs(finalname);
 
   }
+  //  gSystem->Exit(0);
 }
